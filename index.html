@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Karekök Yarışması</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/default.css">
+  <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
+  <script>
+    MobileDragDrop.polyfill({
+      dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+    });
+    // Sürükleme esnasında sayfa kaydırmasını engellemek için
+    window.addEventListener('touchmove', function() {}, {passive: false});
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+<div class="bg-orb orb-3"></div>
+<div class="spark spark-1"></div>
+<div class="spark spark-2"></div>
+<div class="spark spark-3"></div>
+
+<div class="app-shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Matematik + Eğlence + Yarış</p>
+      <h1>Karekök Yarışması</h1>
+    </div>
+    <div class="topbar-actions">
+      <button id="homeBtn" class="ghost-btn hidden">Ana Sayfa</button>
+      <button id="openLeaderboardTopBtn" class="ghost-btn">Genel Skor Tablosu</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="homeScreen" class="panel home-panel active-screen">
+      <div class="hero-card morph-card glow-card">
+        <div class="hero-badge">Hüsne Küçük AİHL</div>
+        <h2>Köstebeğe vur, karekökü yakala, puanı kap!</h2>
+        <p>
+          İlk aşamada köstebeklerden çıkan sayılardan doğru olanı seç, ikinci aşamada sürükle-bırak ile eşleştir,
+          üçüncü aşamada tam kareleri avla. Her oyun rastgele gelir.
+        </p>
+
+        <div class="input-block">
+          <label for="playerName">Oyuncu Adı</label>
+          <input id="playerName" type="text" maxlength="18" placeholder="Adını yaz ve başla" />
+        </div>
+
+        <div class="hero-actions">
+          <button id="startGameBtn" class="primary-btn">Oyuna Başla</button>
+          <button id="openLeaderboardBtn" class="secondary-btn">Genel Skor Tablosu</button>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <article class="mini-card morph-card color-a">
+          <span class="mini-icon">①</span>
+          <h3>Köstebek Turu</h3>
+          <p>3 tur boyunca köklü sayıya en yakın tam sayıyı seç. Her tur 10 saniye.</p>
+        </article>
+        <article class="mini-card morph-card color-b">
+          <span class="mini-icon">②</span>
+          <h3>Eşleştirme</h3>
+          <p>3 soru ve 4 sonuç kartı ile kök içine alma eşleştirmesini tamamla.</p>
+        </article>
+        <article class="mini-card morph-card color-c">
+          <span class="mini-icon">③</span>
+          <h3>Tam Kare Avı</h3>
+          <p>5 sayıdan tam kare olan 2 tanesini seç ve final puanını topla.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="panel hidden">
+      <div class="game-header">
+        <div class="stage-box morph-card glow-card">
+          <p id="stageEyebrow" class="eyebrow">Aşama</p>
+          <h2 id="stageTitle">Aşama Başlığı</h2>
+          <p id="stageInstruction" class="stage-instruction"></p>
+        </div>
+
+        <div class="hud">
+          <div class="hud-card morph-card hud-a">
+            <span>Oyuncu</span>
+            <strong id="playerBadge">-</strong>
+          </div>
+          <div class="hud-card morph-card timer-card hud-b" id="timerCard">
+            <span>Kalan Süre</span>
+            <strong id="timerValue">60</strong>
+          </div>
+          <div class="hud-card morph-card hud-c">
+            <span id="roundLabel">Tur</span>
+            <strong id="roundStatus">-</strong>
+          </div>
+          <div class="hud-card morph-card hud-d">
+            <span>Toplam Puan</span>
+            <strong id="currentTotalScore">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-line-wrap">
+        <div id="progressLine" class="progress-line"></div>
+      </div>
+
+      <div id="moleStage" class="mole-layout hidden">
+        <div class="mole-top-card morph-card glow-card">
+          <div class="column-title">Köstebeklere Vur!</div>
+          <div class="root-target-wrap">
+            <span class="root-target-label">Hedef Köklü Sayı</span>
+            <div id="closestRootValue" class="root-target">√50</div>
+          </div>
+          <p class="closest-tip">En yakın tam sayının yazdığı köstebeğe vur.</p>
+        </div>
+
+        <div id="moleGrid" class="mole-grid"></div>
+      </div>
+
+      <div id="matchingStage" class="stage-layout hidden">
+        <div class="column-panel morph-card color-b-soft">
+          <div class="column-title">İşlem Kartları</div>
+          <div id="questionColumn" class="drop-list"></div>
+        </div>
+        <div class="column-panel morph-card color-c-soft">
+          <div class="column-title">Sonuç Kartları</div>
+          <div id="answerBank" class="answer-bank"></div>
+        </div>
+      </div>
+
+      <div id="selectionStage" class="selection-layout morph-card hidden color-a-soft">
+        <div class="selection-note">Tam kare olan <strong>2</strong> vagonu seçebilirsin.</div>
+        <div class="train-scene">
+          <div class="sky-cloud cloud-1"></div>
+          <div class="sky-cloud cloud-2"></div>
+          <div class="train-track"></div>
+          <div class="train-track rail-2"></div>
+          <div id="trainWrapper" class="train-wrapper">
+            <div class="train-engine">
+              <span class="engine-window"></span>
+              <span class="engine-light"></span>
+              <span class="engine-chimney"></span>
+              <span class="engine-wheel wheel-a"></span>
+              <span class="engine-wheel wheel-b"></span>
+            </div>
+            <div id="numberPool" class="train-wagons"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-actions">
+        <button id="resetStageBtn" class="ghost-btn">Bu Aşamayı Sıfırla</button>
+        <button id="submitStageBtn" class="primary-btn">Cevapları Gönder</button>
+      </div>
+    </section>
+
+    <section id="leaderboardScreen" class="panel hidden">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Şampiyonlar Ligi</p>
+          <h2>Genel Skor Tablosu</h2>
+        </div>
+        <button id="closeLeaderboardBtn" class="ghost-btn">Kapat</button>
+      </div>
+
+      <div id="leaderboardEmpty" class="empty-card morph-card hidden">
+        Henüz kayıtlı skor yok. İlk efsane sen olabilirsin.
+      </div>
+
+      <div class="table-wrap morph-card">
+        <table>
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Oyuncu</th>
+            <th>Toplam</th>
+            <th>A1</th>
+            <th>A2</th>
+            <th>A3</th>
+            <th>Süre</th>
+            <th>Tarih</th>
+          </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="stageResultModal" class="modal hidden">
+  <div class="modal-card morph-card glow-card">
+    <div class="modal-badge" id="modalBadge">Aşama Sonucu</div>
+    <h3 id="modalTitle">Harika!</h3>
+    <p id="modalSummary">Özet burada görünecek.</p>
+
+    <div class="result-stats">
+      <div class="result-chip morph-card color-a-soft">
+        <span>Doğru</span>
+        <strong id="modalCorrect">0</strong>
+      </div>
+      <div class="result-chip morph-card color-b-soft">
+        <span>Süre Bonusu</span>
+        <strong id="modalBonus">0</strong>
+      </div>
+      <div class="result-chip big-chip morph-card color-c-soft">
+        <span>Aşama Puanı</span>
+        <strong id="modalStageScore">0</strong>
+      </div>
+    </div>
+
+    <button id="nextStageBtn" class="primary-btn">Devam Et</button>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<div id="fireworksLayer" class="fireworks-layer"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
