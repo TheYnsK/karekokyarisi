@@ -8,7 +8,6 @@ export default async function handler(req, res) {
 
     try {
         await dbConnect();
-        // Puanı en yüksek olanı, puanlar eşitse süresi en kısa olanı getir (İlk 30)
         const scores = await Score.find({})
             .sort({ totalScore: -1, totalTime: 1 })
             .limit(30);
